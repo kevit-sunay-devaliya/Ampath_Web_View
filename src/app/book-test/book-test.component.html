@@ -141,7 +141,6 @@
               <label>Pincode <span class="req">*</span></label>
               <input
                 [(ngModel)]="homeForm.pincode"
-                (ngModelChange)="save()"
                 placeholder="e.g. 500034"
                 maxlength="6"
                 [class.input-error]="
@@ -166,7 +165,6 @@
                   #dateInput
                   type="date"
                   [(ngModel)]="homeForm.date"
-                  (ngModelChange)="save()"
                   [min]="today"
                   [class.date-empty]="!homeForm.date && !dateFocused"
                   (focus)="dateFocused = true"
@@ -191,7 +189,7 @@
                   <div
                     class="slot-chip"
                     [class.chip-active]="homeForm.slot === slot"
-                    (click)="homeForm.slot = slot; save()"
+                    (click)="homeForm.slot = slot"
                   >
                     {{ slot }}
                   </div>
@@ -220,7 +218,6 @@
                     name="lab"
                     [value]="lab.id"
                     [(ngModel)]="selectedLabId"
-                    (ngModelChange)="save()"
                   />
                   <div class="lab-info">
                     <span class="lab-name">{{ lab.name }}</span>
