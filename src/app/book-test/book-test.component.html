@@ -1,0 +1,657 @@
+<!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
+<header class="header">
+  <div class="logo">
+    <img
+      src="https://www.ampath.com/asset/img/AMPATH-LOGOs.png"
+      alt="AMPATH Logo"
+    />
+  </div>
+
+  <button class="cart-pill" (click)="toggleCart()">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.2"
+    >
+      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <path d="M16 10a4 4 0 01-8 0" />
+    </svg>
+    My Cart
+    @if (cart.length > 0) {
+      <span class="cart-counter">{{ cart.length }}</span>
+    }
+  </button>
+</header>
+
+<!-- STEP INDICATOR -->
+<div class="step-bar">
+  <div
+    class="step-item"
+    [class.step-active]="currentStep === 1"
+    [class.step-done]="currentStep === 2"
+  >
+    <div class="step-dot">
+      @if (currentStep === 2) {
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      } @else {
+        1
+      }
+    </div>
+    <span class="step-label">Service Details</span>
+  </div>
+  <div
+    class="step-connector"
+    [class.step-connector-done]="currentStep === 2"
+  ></div>
+  <div class="step-item" [class.step-active]="currentStep === 2">
+    <div class="step-dot">2</div>
+    <span class="step-label">Select Tests</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ PAGE BODY ═══════════════════════════ -->
+<div class="page-body">
+  <!-- ══════════════ STEP 1: SERVICE DETAILS ══════════════ -->
+  @if (currentStep === 1) {
+    <div class="step1-wrap fade-in">
+      <aside class="booking-panel">
+        <!-- SERVICE TYPE -->
+        <div class="panel-section">
+          <div class="panel-label">Service Type</div>
+
+          <div class="svc-toggle">
+            <div
+              class="svc-opt"
+              [class.svc-opt-active]="serviceType === 'home'"
+              (click)="selectServiceType('home')"
+            >
+              <div class="svc-opt-icon home-icon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                  <polyline points="9,22 9,12 15,12 15,22" />
+                </svg>
+              </div>
+              <div class="svc-opt-text">
+                <span class="svc-opt-title">Home Collection</span>
+                <span class="svc-opt-sub">Phlebotomist visits you</span>
+              </div>
+              <div
+                class="svc-radio"
+                [class.svc-radio-on]="serviceType === 'home'"
+              ></div>
+            </div>
+
+            <div
+              class="svc-opt"
+              [class.svc-opt-active]="serviceType === 'lab'"
+              (click)="selectServiceType('lab')"
+            >
+              <div class="svc-opt-icon lab-icon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="2" y="3" width="20" height="14" rx="2" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+              </div>
+              <div class="svc-opt-text">
+                <span class="svc-opt-title">Visit a Lab</span>
+                <span class="svc-opt-sub">Walk in at your convenience</span>
+              </div>
+              <div
+                class="svc-radio"
+                [class.svc-radio-on]="serviceType === 'lab'"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HOME COLLECTION DETAILS -->
+        @if (serviceType === "home") {
+          <div class="panel-section fade-in">
+            <div class="panel-label">Collection Details</div>
+
+            <div class="field">
+              <label>Pincode <span class="req">*</span></label>
+              <input
+                [(ngModel)]="homeForm.pincode"
+                (ngModelChange)="save()"
+                placeholder="e.g. 500034"
+                maxlength="6"
+                [class.input-error]="
+                  showStep1Errors && homeForm.pincode.trim().length !== 6
+                "
+              />
+              @if (showStep1Errors && homeForm.pincode.trim().length !== 6) {
+                <span class="field-error"
+                  >Please enter a valid 6-digit pincode</span
+                >
+              }
+            </div>
+
+            <div class="field">
+              <label>Preferred Date <span class="req">*</span></label>
+              <div
+                class="date-wrapper"
+                [class.wrapper-error]="showStep1Errors && !homeForm.date"
+                (click)="dateInput.showPicker()"
+              >
+                <input
+                  #dateInput
+                  type="date"
+                  [(ngModel)]="homeForm.date"
+                  (ngModelChange)="save()"
+                  [min]="today"
+                  [class.date-empty]="!homeForm.date && !dateFocused"
+                  (focus)="dateFocused = true"
+                  (blur)="dateFocused = false"
+                />
+                @if (!homeForm.date && !dateFocused) {
+                  <span class="date-placeholder">Select a date</span>
+                }
+              </div>
+              @if (showStep1Errors && !homeForm.date) {
+                <span class="field-error">Please select a preferred date</span>
+              }
+            </div>
+
+            <div class="field">
+              <label>Time Slot <span class="req">*</span></label>
+              <div
+                class="slot-chips"
+                [class.chips-error]="showStep1Errors && !homeForm.slot"
+              >
+                @for (slot of slots; track slot) {
+                  <div
+                    class="slot-chip"
+                    [class.chip-active]="homeForm.slot === slot"
+                    (click)="homeForm.slot = slot; save()"
+                  >
+                    {{ slot }}
+                  </div>
+                }
+              </div>
+              @if (showStep1Errors && !homeForm.slot) {
+                <span class="field-error">Please select a time slot</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- LAB SELECTION -->
+        @if (serviceType === "lab") {
+          <div class="panel-section fade-in">
+            <div class="panel-label">Select Centre</div>
+
+            <div class="lab-list">
+              @for (lab of labLocations; track lab.id) {
+                <label
+                  class="lab-row"
+                  [class.lab-row-picked]="selectedLabId === lab.id"
+                >
+                  <input
+                    type="radio"
+                    name="lab"
+                    [value]="lab.id"
+                    [(ngModel)]="selectedLabId"
+                    (ngModelChange)="save()"
+                  />
+                  <div class="lab-info">
+                    <span class="lab-name">{{ lab.name }}</span>
+                    <span class="lab-addr">{{ lab.address }}</span>
+                  </div>
+                  <div
+                    class="lab-radio-dot"
+                    [class.lab-radio-filled]="selectedLabId === lab.id"
+                  ></div>
+                </label>
+              }
+            </div>
+            @if (showStep1Errors && !selectedLabId) {
+              <span class="field-error" style="margin-top: 8px; display: block"
+                >Please select a centre</span
+              >
+            }
+          </div>
+        }
+
+        @if (!serviceType) {
+          <div class="panel-hint">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#94a3b8"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            Select a service type to fill in your details
+          </div>
+        }
+      </aside>
+      <div class="step1-footer">
+        <button
+          class="btn-continue"
+          (click)="goToStep2()"
+          [class.btn-continue-disabled]="showStep1Errors && !step1Valid"
+        >
+          Continue
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════ STEP 2: TESTS + PACKAGES ══════════════ -->
+  @if (currentStep === 2) {
+    <div class="step2-wrap fade-in">
+      <div class="step2-topbar">
+        <button class="btn-back" (click)="backToStep1()">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+          Back
+        </button>
+        @if (serviceType === "home") {
+          <span class="ctx-badge home-badge">Home Collection</span>
+          @if (homeForm.pincode) {
+            <span class="step2-detail">{{ homeForm.pincode }}</span>
+          }
+          @if (homeForm.date) {
+            <span class="step2-detail">· {{ homeForm.date }}</span>
+          }
+          @if (homeForm.slot) {
+            <span class="step2-detail">· {{ homeForm.slot }}</span>
+          }
+        } @else if (serviceType === "lab") {
+          <span class="ctx-badge lab-badge">Lab Visit</span>
+          @if (selectedLabName) {
+            <span class="step2-detail">{{ selectedLabName }}</span>
+          }
+        }
+      </div>
+      <!-- ══════════════ RIGHT PANEL: TESTS + PACKAGES ══════════════ -->
+      <main class="tests-panel">
+        <!-- TAB SWITCH -->
+        <div class="tab-switch">
+          <button
+            class="tab-btn"
+            [class.tab-active]="activeTab === 'tests'"
+            (click)="switchTab('tests')"
+          >
+            Lab Tests
+          </button>
+          <button
+            class="tab-btn"
+            [class.tab-active]="activeTab === 'packages'"
+            (click)="switchTab('packages')"
+          >
+            Health Packages
+          </button>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="toolbar">
+          <div class="search-box">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#94a3b8"
+              stroke-width="2.2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              [(ngModel)]="searchQuery"
+              [placeholder]="
+                activeTab === 'tests' ? 'Search tests...' : 'Search packages...'
+              "
+            />
+          </div>
+          @if (activeTab === "tests") {
+            <div class="filter-wrap">
+              <select class="filter-sel" [(ngModel)]="filterCondition">
+                <option value="" disabled hidden>Search by condition</option>
+                <option value="endocrine">Endocrine Disorders</option>
+                <option value="cardiovascular">Cardiovascular</option>
+                <option value="gastrointestinal">Gastrointestinal</option>
+                <option value="renal">Renal</option>
+                <option value="diabetes">Diabetes</option>
+                <option value="skeletomuscular">Skeletomuscular</option>
+                <option value="infectious">Infectious</option>
+                <option value="genetics">Genetics</option>
+                <option value="blood">Blood Disorders</option>
+                <option value="allergy">Allergy</option>
+                <option value="neuro">Neuro</option>
+                <option value="bleeding">Bleeding Disorder</option>
+                <option value="genomics">Genomics</option>
+                <option value="pulmonary">Pulmonary</option>
+                <option value="others">Others</option>
+                <option value="oncology">Oncology</option>
+                <option value="metabolic">Metabolic Disorders</option>
+                <option value="autoimmune">Autoimmune</option>
+                <option value="toxicity">Toxicity</option>
+              </select>
+              @if (filterCondition) {
+                <button
+                  class="filter-clear"
+                  (click)="filterCondition = ''"
+                  title="Clear"
+                >
+                  &times;
+                </button>
+              }
+            </div>
+            <div class="filter-wrap">
+              <select class="filter-sel" [(ngModel)]="filterPrice">
+                <option value="" disabled hidden>Price Filter</option>
+                <option value="0-500">0 - 500</option>
+                <option value="501-1000">501 - 1000</option>
+                <option value=">1000">&gt;1000</option>
+              </select>
+              @if (filterPrice) {
+                <button
+                  class="filter-clear"
+                  (click)="filterPrice = ''"
+                  title="Clear"
+                >
+                  &times;
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- LAB TESTS GRID -->
+        @if (activeTab === "tests") {
+          <div class="sec-head">
+            <h2>Available <span class="hl">Lab Tests</span></h2>
+            <p class="sec-hint">{{ filteredTests.length }} tests available</p>
+          </div>
+
+          <div class="tests-grid">
+            @for (test of filteredTests; track test.id) {
+              <div class="test-tile">
+                <div class="tile-body">
+                  <a
+                    class="tile-name"
+                    [href]="test.url"
+                    target="_blank"
+                    rel="noopener"
+                    >{{ test.name }}</a
+                  >
+                  @if (test.parameters) {
+                    <span class="param-badge"
+                      >{{ test.parameters }} Parameters</span
+                    >
+                  }
+                </div>
+                <div class="tile-foot">
+                  <span class="tile-price">₹{{ test.price }}</span>
+                  <button
+                    class="add-btn"
+                    [class.add-done]="isInCart(test.name)"
+                    (click)="
+                      isInCart(test.name)
+                        ? removeFromCart(test.name)
+                        : addToCart({
+                            name: test.name,
+                            price: test.price,
+                            type: 'test',
+                          })
+                    "
+                  >
+                    @if (isInCart(test.name)) {
+                      ✕ Remove
+                    } @else {
+                      + Add
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- HEALTH PACKAGES GRID -->
+        @if (activeTab === "packages") {
+          <div class="sec-head">
+            <h2>Preventive <span class="hl">Health Packages</span></h2>
+            <p class="sec-hint">Comprehensive screenings for your well-being</p>
+          </div>
+
+          <div class="pkg-grid">
+            @for (pkg of filteredPackages; track pkg.id) {
+              <div class="pkg-tile">
+                <div class="pkg-header">
+                  <div class="pkg-icon">
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                    >
+                      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    </svg>
+                  </div>
+                  <div class="pkg-header-info">
+                    <h4 class="pkg-name">{{ pkg.name }}</h4>
+                    <div class="pkg-stats">
+                      @if (pkg.parameters > 0) {
+                        <span class="stat-chip"
+                          >{{ pkg.parameters }} Params</span
+                        >
+                      }
+                      <span class="stat-chip">{{ pkg.reports }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="pkg-body">
+                  @if (pkg.includes.length > 0) {
+                    <ul class="pkg-includes">
+                      @for (item of pkg.includes; track item) {
+                        <li>{{ item }}</li>
+                      }
+                    </ul>
+                  }
+                  <div class="pkg-foot">
+                    <span class="pkg-price">₹{{ pkg.price }}</span>
+                    <button
+                      class="add-btn"
+                      [class.add-done]="isInCart(pkg.name)"
+                      (click)="
+                        isInCart(pkg.name)
+                          ? removeFromCart(pkg.name)
+                          : addToCart({
+                              name: pkg.name,
+                              price: pkg.price,
+                              type: 'package',
+                            })
+                      "
+                    >
+                      @if (isInCart(pkg.name)) {
+                        ✕ Remove
+                      } @else {
+                        + Add
+                      }
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </main>
+    </div>
+  }
+</div>
+
+<!-- ══════════════ FLOATING VIEW CART BAR ══════════════ -->
+@if (currentStep === 2 && cart.length > 0 && !cartOpen) {
+  <div class="float-cart-bar" (click)="toggleCart()">
+    <span class="float-cart-cta">View Cart</span>
+    <div class="float-cart-right">
+      <span class="float-cart-label"
+        >{{ cart.length }} item{{ cart.length > 1 ? "s" : "" }} added</span
+      >
+      <span class="float-cart-total">₹{{ cartTotal }}</span>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════ CART DRAWER ═══════════════════════════ -->
+<div
+  class="overlay"
+  [class.overlay-open]="cartOpen"
+  (click)="toggleCart()"
+></div>
+
+<aside class="cart-drawer" [class.drawer-open]="cartOpen">
+  <div class="drawer-header">
+    <div class="drawer-title">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#0891b2"
+        stroke-width="2.2"
+      >
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <path d="M16 10a4 4 0 01-8 0" />
+      </svg>
+      My Cart
+    </div>
+    <button class="close-drawer" (click)="toggleCart()">✕</button>
+  </div>
+
+  @if (serviceType) {
+    <div class="drawer-context">
+      @if (serviceType === "home") {
+        <span class="ctx-badge home-badge">Home Collection</span>
+        @if (homeForm.pincode) {
+          <div class="ctx-detail">
+            {{ homeForm.pincode }}
+            @if (homeForm.date) {
+              &nbsp;·&nbsp; {{ homeForm.date }}
+            }
+          </div>
+        }
+        @if (homeForm.slot) {
+          <div class="ctx-detail">{{ homeForm.slot }}</div>
+        }
+      } @else {
+        <span class="ctx-badge lab-badge">Lab Visit</span>
+        @if (selectedLabName) {
+          <div class="ctx-detail">{{ selectedLabName }}</div>
+        }
+      }
+    </div>
+  }
+
+  <div class="drawer-items">
+    @if (cart.length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">🧪</div>
+        <p>No tests added yet</p>
+        <span>Browse and add tests to get started</span>
+      </div>
+    } @else {
+      @for (item of cart; track item.name) {
+        <div class="cart-row">
+          <div class="cart-col">
+            <span class="cart-name">{{ item.name }}</span>
+            <div class="cart-row-meta">
+              <span
+                class="cart-type-badge"
+                [class.badge-test]="item.type === 'test'"
+                [class.badge-pkg]="item.type === 'package'"
+              >
+                {{ item.type === "test" ? "Lab Test" : "Health Package" }}
+              </span>
+              <span class="cart-price">₹{{ item.price }}</span>
+            </div>
+          </div>
+          <button class="remove-btn" (click)="removeFromCart(item.name)">
+            ✕
+          </button>
+        </div>
+      }
+    }
+  </div>
+
+  @if (cart.length > 0) {
+    <div class="drawer-footer">
+      <div class="total-line">
+        <span>Total Amount</span>
+        <span class="total-val">₹{{ cartTotal }}</span>
+      </div>
+      <button
+        class="btn-checkout"
+        (click)="proceedToBook()"
+        [disabled]="isBooking"
+      >
+        @if (isBooking) {
+          <span class="btn-spinner"></span>
+          Booking…
+        } @else {
+          Proceed to Book
+        }
+      </button>
+    </div>
+  }
+</aside>
