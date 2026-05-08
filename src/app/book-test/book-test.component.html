@@ -159,20 +159,40 @@
               <div
                 class="date-wrapper"
                 [class.wrapper-error]="showStep1Errors && !homeForm.date"
-                (click)="dateInput.showPicker()"
               >
+                <!-- Visible styled display -->
+                <div
+                  class="date-display"
+                  [class.date-display-empty]="!homeForm.date"
+                >
+                  <span class="date-display-text">{{
+                    homeForm.date ? formatDate(homeForm.date) : "Select a date"
+                  }}</span>
+                  <svg
+                    class="date-cal-icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </div>
+                <!-- Transparent native input overlaid on top -->
                 <input
                   #dateInput
                   type="date"
                   [(ngModel)]="homeForm.date"
                   [min]="today"
-                  [class.date-empty]="!homeForm.date && !dateFocused"
-                  (focus)="dateFocused = true"
-                  (blur)="dateFocused = false"
+                  class="date-input-hidden"
                 />
-                @if (!homeForm.date && !dateFocused) {
-                  <span class="date-placeholder">Select a date</span>
-                }
               </div>
               @if (showStep1Errors && !homeForm.date) {
                 <span class="field-error">Please select a preferred date</span>

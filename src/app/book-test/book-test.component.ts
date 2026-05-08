@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { BookingService } from '../booking.service';
 
 interface Test {
   id: number;
@@ -33,7 +35,7 @@ interface LabLocation {
 
 const NOTIFY_API_URL =
   'https://ikit.chatomate.in/saas/workflow/bot/62c44626e4eedda7941d73f0?webhookId=69faed5034cd415d7f73999d';
-const WHATSAPP_URL = 'https://wa.me/+919313234679';
+const DEFAULT_PHONE = '+919313234679';
 
 @Component({
   selector: 'app-book-test',
@@ -42,7 +44,18 @@ const WHATSAPP_URL = 'https://wa.me/+919313234679';
   templateUrl: './book-test.component.html',
   styleUrl: './book-test.component.css',
 })
-export class BookTestComponent {
+export class BookTestComponent implements OnInit {
+  constructor(
+    private route: ActivatedRoute,
+    private bookingService: BookingService,
+  ) {}
+
+  ngOnInit(): void {
+    const params = this.route.snapshot.queryParams;
+    if (params['contactNumber']) {
+      this.bookingService.setContactNumber(params['contactNumber']);
+    }
+  }
   // ── Step flow ──────────────────────────────────────
   currentStep: 1 | 2 = 1;
   showStep1Errors = false;
@@ -462,6 +475,16 @@ export class BookTestComponent {
     return new Date().toISOString().split('T')[0];
   }
 
+  formatDate(dateStr: string): string {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    return d.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+
   get filteredTests(): Test[] {
     let result = this.tests.filter((t) =>
       t.name.toLowerCase().includes(this.searchQuery.toLowerCase()),
@@ -531,15 +554,36 @@ export class BookTestComponent {
 
     // Use no-cors fetch to avoid CORS preflight on the third-party webhook.
     // The request is fired as a simple POST; the opaque response is ignored.
+    const raw = (
+      this.bookingService.getContactNumber() ?? DEFAULT_PHONE
+    ).replace(/\s+/g, '');
+    const phone = raw.startsWith('+') ? raw : `+${raw}`;
+    const whatsappUrl = `https://wa.me/${phone}`;
+
+    const itemArray = this.cart.map(
+      (item) =>
+        `[${item.type === 'test' ? 'Test' : 'Package'}] ${item.name} – ₹${item.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+    );
+
+    const total = this.cart.reduce((sum, item) => sum + item.price, 0);
+    const totalFormatted = total.toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+    const params = new URLSearchParams({
+      ph: phone,
+      bookingId: String(bookingId),
+      totalAmount: totalFormatted,
+    });
+    itemArray.forEach((entry) => params.append('itemDetails', entry));
+
     fetch(NOTIFY_API_URL, {
       method: 'POST',
       mode: 'no-cors',
-      body: new URLSearchParams({
-        ph: '+919157447576',
-        bookingId: String(bookingId),
-      }),
+      body: params,
     }).finally(() => {
-      window.location.href = WHATSAPP_URL;
+      window.location.href = whatsappUrl;
       // On mobile the OS intercepts wa.me and opens WhatsApp natively,
       // leaving this browser tab alive with stale state.
       // Reload the page after a short delay so it is fresh when the user returns.
