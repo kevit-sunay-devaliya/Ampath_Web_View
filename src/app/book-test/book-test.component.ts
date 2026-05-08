@@ -558,7 +558,7 @@ export class BookTestComponent implements OnInit {
       this.bookingService.getContactNumber() ?? DEFAULT_PHONE
     ).replace(/\s+/g, '');
     const phone = raw.startsWith('+') ? raw : `+${raw}`;
-    const whatsappUrl = `https://wa.me/${phone}`;
+    const whatsappUrl = `https://wa.me/+919313234679`;
 
     const itemArray = this.cart.map(
       (item) =>
